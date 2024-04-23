@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-image: url('./assets/bg.jpeg');
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            width: calc(100% - 22px);
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #acafff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #weather {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 20px;
+            width: calc(50% - 20px);
+            transition: transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h3 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .forecast-temperature {
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather App</h1>
+        <input type="text" id="locationInput" placeholder="Enter Location">
+        <button onclick="getWeather()">Get Weather</button>
+        <div id="weather"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        async function getWeather() {
+            const locationInput = document.getElementById('locationInput').value;
+            const options = {
+                method: 'GET',
+                url: 'https://yahoo-weather5.p.rapidapi.com/weather',
+                params: {
+                    location: locationInput,
+                    format: 'json',
+                    u: 'c'
+                },
+                headers: {
+                    'X-RapidAPI-Key': '8dbcc149e5mshc40e9b3d744b3cdp152cfdjsnff4c78040454',
+                    'X-RapidAPI-Host': 'yahoo-weather5.p.rapidapi.com'
+                }
+            };
+
+            try {
+                const response = await axios.request(options);
+                console.log(response.data);
+                const weatherDiv = document.getElementById('weather');
+                weatherDiv.innerHTML = `
+                    <div class="card">
+                        <h3>Current Weather</h3>
+                        <p>Condition: ${response.data.current_observation.condition.text}</p>
+                        <p>Temperature: ${response.data.current_observation.condition.temperature}°C</p>
+                        <p>Humidity: ${response.data.current_observation.atmosphere.humidity}%</p>
+                        <p>Pressure: ${response.data.current_observation.atmosphere.pressure} mb</p>
+                        <p>Wind Speed: ${response.data.current_observation.wind.speed} mph</p>
+                        <p>Sunrise: ${response.data.current_observation.astronomy.sunrise}</p>
+                        <p>Sunset: ${response.data.current_observation.astronomy.sunset}</p>
+                    </div>
+                    <div class="card">
+                        <h3>Forecast for Next 4 Days</h3>
+                        ${response.data.forecasts.slice(1, 5).map(forecast => `
+                            <p>${forecast.day} (${forecast.date}): ${forecast.text}</p>
+                            <div class="forecast-temperature">High: ${forecast.high}°C, Low: ${forecast.low}°C</div>
+                        `).join('')}
+                    </div>
+                `;
+            } catch (error) {
+                console.error(error);
+                const weatherDiv = document.getElementById('weather');
+                weatherDiv.innerHTML = '<p>Could not fetch weather data. Please try again later.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
